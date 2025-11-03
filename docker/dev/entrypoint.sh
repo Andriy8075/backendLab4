@@ -3,6 +3,10 @@ set -e
 pip install -r docker/dev/requirements.txt
 if [ ! -f "docker/dev/.env" ]; then
   cp docker/dev/.env.example docker/dev/.env
+  
+  JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(64))")
+  echo "\nJWT_SECRET_KEY=$JWT_SECRET" >> docker/dev/.env
+  echo "Generated JWT_SECRET_KEY for development"
 fi
 
 echo "PATH_TO_DOT_ENV=docker/dev/.env" > app/path_to_dot_env

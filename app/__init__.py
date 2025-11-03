@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 import os
+from flask_jwt_extended import JWTManager
 
 from app.load_env import load_env
 load_env()
@@ -21,6 +22,8 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    JWTManager(app)
 
     from app.models.user import User
     from app.models.category import Category

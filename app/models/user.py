@@ -1,4 +1,5 @@
 from app.extensions import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(db.Model):
@@ -6,13 +7,15 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     default_currency = db.Column(db.String(3), nullable=False)
 
     categories = db.relationship('Category', back_populates='user', lazy='dynamic', cascade='all, delete-orphan')
 
     @staticmethod
-    def create(name, default_currency: str):
-        user = User(name=name, default_currency=default_currency)
+    def create(data: dict):
+        password_hash = generate_password_hash(data['password'])
+        user = User(name=data['name'], password=password_hash, default_currency=data['default_currency'])
         db.session.add(user)
         db.session.commit()
         return user
@@ -43,3 +46,9 @@ class User(db.Model):
             'name': self.name,
             'default_currency': self.default_currency,
         }
+
+    def check_password(self, password: str) -> bool:
+        print(password)
+        print(self.password)
+        print(check_password_hash(self.password, password))
+        return check_password_hash(self.password, password)

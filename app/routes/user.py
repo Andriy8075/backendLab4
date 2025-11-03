@@ -1,22 +1,68 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    verify_jwt_in_request,
+)
+from functools import wraps
 from marshmallow import ValidationError
 from app.models.user import User
 from app.schemas.user_schema import UserSchema, UserCreateSchema
 
 user_bp = Blueprint('user', __name__)
 
-@user_bp.route('/user', methods=['POST'])
+
+def unauthenticated_only(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request(optional=True)
+        if get_jwt_identity() is not None:
+            return jsonify({'error': 'Already authenticated'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def get_current_user_id() -> int:
+    """Return the currently authenticated user's id.
+
+    Requires a valid JWT in the request (Authorization: Bearer <token>).
+    """
+    verify_jwt_in_request()
+    return get_jwt_identity()
+
+
+# Auth routes
+@user_bp.route('/login', methods=['POST'])
+@unauthenticated_only
+def login():
+    form = request.form or {}
+    user_id = form.get('id')
+    password = form.get('password')
+
+    user = User.query.get(user_id)
+
+    if user is None or not password or not user.check_password(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({'message': 'logged in', 'access_token': access_token, 'user': user.to_dict()}), 200
+
+@unauthenticated_only
+@user_bp.route('/register', methods=['POST'])
 def create_user():
     try:
         schema = UserCreateSchema()
         data = schema.load(request.form)
 
-        user = User.create(data['name'], data['default_currency'])
+        user = User.create(data)
 
+        access_token = create_access_token(identity=user.id)
         user_schema = UserSchema()
         return jsonify({
             'message': 'user created successfully',
-            'user': user_schema.dump(user)
+            'user': user_schema.dump(user),
+            'access_token': access_token
         }), 201
         
     except ValidationError as err:
