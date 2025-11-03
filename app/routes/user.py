@@ -12,29 +12,7 @@ from app.schemas.user_schema import UserSchema, UserCreateSchema
 
 user_bp = Blueprint('user', __name__)
 
-
-def unauthenticated_only(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_in_request(optional=True)
-        if get_jwt_identity() is not None:
-            return jsonify({'error': 'Already authenticated'}), 403
-        return fn(*args, **kwargs)
-    return wrapper
-
-
-def get_current_user_id() -> int:
-    """Return the currently authenticated user's id.
-
-    Requires a valid JWT in the request (Authorization: Bearer <token>).
-    """
-    verify_jwt_in_request()
-    return get_jwt_identity()
-
-
-# Auth routes
 @user_bp.route('/login', methods=['POST'])
-@unauthenticated_only
 def login():
     form = request.form or {}
     user_id = form.get('id')
@@ -48,7 +26,6 @@ def login():
     access_token = create_access_token(identity=user.id)
     return jsonify({'message': 'logged in', 'access_token': access_token, 'user': user.to_dict()}), 200
 
-@unauthenticated_only
 @user_bp.route('/register', methods=['POST'])
 def create_user():
     try:
@@ -86,6 +63,7 @@ def get_user(id):
     user_schema = UserSchema()
     return jsonify(user_schema.dump(user)), 200
 
+@jwt_required()
 @user_bp.route('/user/<int:id>', methods=['DELETE'])
 def delete_user(id):
     if User.delete(id):

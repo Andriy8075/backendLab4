@@ -2,9 +2,13 @@ from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 from app.models.record import Record
 from app.schemas.record_schema import RecordSchema, RecordCreateSchema
+from flask_jwt_extended import (
+    jwt_required,
+)
 
 record_bp = Blueprint('record', __name__)
 
+@jwt_required()
 @record_bp.route('/record', methods=['POST'])
 def create_record():
     try:
@@ -25,6 +29,7 @@ def create_record():
             'messages': err.messages
         }), 400
 
+@jwt_required()
 @record_bp.route('/record/<int:id>', methods=['GET'])
 def get_record(id):
     record = Record.get_by_id(id)
@@ -34,6 +39,7 @@ def get_record(id):
     record_schema = RecordSchema()
     return jsonify(record_schema.dump(record)), 200
 
+@jwt_required()
 @record_bp.route('/record/<int:id>', methods=['DELETE'])
 def delete_record(id):
     if Record.delete(id):

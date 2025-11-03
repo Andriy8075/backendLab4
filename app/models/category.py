@@ -17,10 +17,14 @@ class Category(db.Model):
         db.session.add(category)
         db.session.commit()
         return category
+    
+    @staticmethod
+    def get_by_user_id(user_id):
+        return Category.query.filter_by(user_id=user_id).all()
 
     @staticmethod
-    def get_all():
-        return Category.query.all()
+    def get_by_id(id):
+        return Category.query.get(id)
 
     @staticmethod
     def delete(id):
