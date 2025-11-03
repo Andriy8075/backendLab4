@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
     verify_jwt_in_request,
+    set_access_cookies
 )
 from functools import wraps
 from marshmallow import ValidationError
@@ -24,7 +25,9 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify({'message': 'logged in', 'access_token': access_token, 'user': user.to_dict()}), 200
+    response = jsonify({'message': 'logged in', 'user': user.to_dict()})
+    set_access_cookies(response, access_token)
+    return response, 200
 
 @user_bp.route('/register', methods=['POST'])
 def create_user():
@@ -36,11 +39,12 @@ def create_user():
 
         access_token = create_access_token(identity=user.id)
         user_schema = UserSchema()
-        return jsonify({
+        response = jsonify({
             'message': 'user created successfully',
-            'user': user_schema.dump(user),
-            'access_token': access_token
-        }), 201
+            'user': user_schema.dump(user)
+        })
+        set_access_cookies(response, access_token)
+        return response, 201
         
     except ValidationError as err:
         return jsonify({

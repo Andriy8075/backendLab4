@@ -23,6 +23,10 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app.config["JWT_COOKIE_SECURE"] = False
+    app.config["JWT_COOKIE_HTTPONLY"] = True
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     JWTManager(app)
 
     from app.models.user import User

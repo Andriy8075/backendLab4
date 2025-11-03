@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 from app.models.category import Category
-from app.schemas.category_schema import CategorySchema, CategoryCreateSchema
+from app.schemas.category_schema import CategorySchema, CategoryCreateSchema, DeleteCategorySchema
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
@@ -41,10 +41,14 @@ def get_categories():
 @jwt_required()
 @category_bp.route('/category/<int:id>', methods=['DELETE'])
 def delete_category(id):
-    user_id = get_jwt_identity()
-    category = Category.get_by_id(id)
-    if not category or category.user_id != user_id:
-        return jsonify({'error': 'Category not found'}), 404
-    
-    Category.delete(id)
+    schema = DeleteCategorySchema()
+
+    try:
+        data = schema.load(request.form)
+    except ValidationError as err:
+        return jsonify({
+            'error': 'Validation error',
+            'messages': err.messages
+        }), 400
+    Category.delete(data['id'])
     return jsonify({'message': 'Category deleted successfully'}), 200

@@ -27,3 +27,14 @@ class CategoryCreateSchema(Schema):
             category = Category.query.filter_by(name=data['name'], user_id=data['user_id']).first()
             if category is not None:
                 raise ValidationError('Category with this name already exists for this user', field_name='name')
+
+class DeleteCategorySchema(Schema):
+    id = fields.Int(required=True, validate=validate.Range(min=1))
+
+    @validates_schema
+    def validate_category_exists_and_belongs_to_user(self, data, **kwargs):
+        category = Category.query.get(data['id'])
+        if category is None:
+            raise ValidationError('Category with specified ID does not exist', field_name='id')
+        if category.user_id != get_jwt_identity():
+            raise ValidationError('Category does not belong to the current user', field_name='id')
