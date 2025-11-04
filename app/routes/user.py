@@ -24,7 +24,7 @@ def login():
     if user is None or not password or not user.check_password(password):
         return jsonify({'error': 'Invalid credentials'}), 401
 
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     response = jsonify({'message': 'logged in', 'user': user.to_dict()})
     set_access_cookies(response, access_token)
     return response, 200
@@ -37,7 +37,7 @@ def create_user():
 
         user = User.create(data)
 
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         user_schema = UserSchema()
         response = jsonify({
             'message': 'user created successfully',
@@ -67,8 +67,8 @@ def get_user(id):
     user_schema = UserSchema()
     return jsonify(user_schema.dump(user)), 200
 
-@jwt_required()
 @user_bp.route('/user/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_user(id):
     if User.delete(id):
         return jsonify({'message': 'User deleted successfully'}), 200

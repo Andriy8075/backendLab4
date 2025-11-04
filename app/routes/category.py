@@ -16,7 +16,7 @@ def create_category():
         schema = CategoryCreateSchema()
         data = schema.load(request.form)
 
-        category = Category.create(data['name'], get_jwt_identity())
+        category = Category.create(data['name'], int(get_jwt_identity()))
 
         category_schema = CategorySchema()
         return jsonify({
@@ -33,7 +33,7 @@ def create_category():
 @jwt_required()
 @category_bp.route('/category', methods=['GET'])
 def get_categories():
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     categories = Category.get_by_user_id(user_id)
     category_schema = CategorySchema(many=True)
     return jsonify(category_schema.dump(categories)), 200
