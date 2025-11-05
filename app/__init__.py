@@ -7,26 +7,27 @@ load_env()
 
 from app.extensions import db, migrate
 from app.config.database import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
+from app.add_env_to_config import add_env_to_config
 
 
 def create_app():
     app = Flask(__name__)
 
+    add_env_to_config(app, [
+        'JWT_SECRET_KEY',
+        'JWT_TOKEN_LOCATION',
+        ['JWT_COOKIE_SECURE', 'bool'],
+        ['JWT_COOKIE_HTTPONLY', 'bool'],
+        ['JWT_COOKIE_CSRF_PROTECT', 'bool'],
+        ['DEBUG', 'bool'],
+        ['PROPAGATE_EXCEPTIONS', 'another_var', 'DEBUG']
+    ])
+
     app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', SQLALCHEMY_TRACK_MODIFICATIONS)
 
-    debug = os.getenv('DEBUG', 'False').lower() == 'true'
-
-    app.config['DEBUG'] = debug
-    app.config['PROPAGATE_EXCEPTIONS'] = debug
-
     db.init_app(app)
     migrate.init_app(app, db)
-    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-    app.config["JWT_COOKIE_SECURE"] = False
-    app.config["JWT_COOKIE_HTTPONLY"] = True
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     JWTManager(app)
 
     from app.models.user import User
