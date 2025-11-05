@@ -7,7 +7,6 @@ from flask_jwt_extended import (
     set_access_cookies,
     unset_jwt_cookies
 )
-from functools import wraps
 from marshmallow import ValidationError
 from app.models.user import User
 from app.schemas.user_schema import UserSchema, UserCreateSchema
@@ -78,19 +77,14 @@ def logout():
 @user_bp.route('/user/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(id):
-    # Verify JWT token and get authenticated user ID
     authenticated_user_id = int(get_jwt_identity())
-    
-    # Check if the authenticated user matches the user being deleted
+
     if authenticated_user_id != id:
         return jsonify({'error': 'You can only delete your own account'}), 403
-    
-    # Verify the user exists before attempting deletion
+
     user = User.query.get(id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
     
-    if User.delete(id):
-        return jsonify({'message': 'User deleted successfully'}), 200
-    else:
-        return jsonify({'error': 'User not found'}), 404
+    User.delete(id)
+    return jsonify({'message': 'User deleted successfully'}), 200
