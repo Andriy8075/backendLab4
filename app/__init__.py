@@ -1,51 +1,26 @@
-from flask import Flask, jsonify
-import os
+from flask import Flask
 from flask_jwt_extended import JWTManager
 
-from app.load_env import load_env
+from app.env_manager import load_env, add_env_to_config
 load_env()
 
 from app.extensions import db, migrate
 from app.config.database import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-from app.add_env_to_config import add_env_to_config
+from app.config.env_to_config import env_to_config_values_array
+from app.blueprints_manager import register_blueprints_in_routes
 
+app = Flask(__name__)
 
-def create_app():
-    app = Flask(__name__)
+add_env_to_config(app, env_to_config_values_array)
 
-    add_env_to_config(app, [
-        'JWT_SECRET_KEY',
-        'JWT_TOKEN_LOCATION',
-        ['JWT_COOKIE_SECURE', 'bool'],
-        ['JWT_COOKIE_HTTPONLY', 'bool'],
-        ['JWT_COOKIE_CSRF_PROTECT', 'bool'],
-        ['DEBUG', 'bool'],
-        ['PROPAGATE_EXCEPTIONS', 'another_var', 'DEBUG']
-    ])
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', SQLALCHEMY_TRACK_MODIFICATIONS)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-    app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', SQLALCHEMY_TRACK_MODIFICATIONS)
+db.init_app(app)
+migrate.init_app(app, db)
+JWTManager(app)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-    JWTManager(app)
+register_blueprints_in_routes(app, ['general', 'user', 'category', 'record'])
 
-    from app.models.user import User
-    from app.models.category import Category
-    from app.models.record import Record
-
-    from app.routes.general import general_bp
-    from app.routes.user import user_bp
-    from app.routes.category import category_bp
-    from app.routes.record import record_bp
-    
-    app.register_blueprint(general_bp)
-    app.register_blueprint(user_bp)
-    app.register_blueprint(category_bp)
-    app.register_blueprint(record_bp)
-    
-    return app
-
-app = create_app()
 
 

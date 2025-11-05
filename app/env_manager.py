@@ -1,7 +1,11 @@
+from dotenv import load_dotenv
 import os
 
+def load_env():
+    load_dotenv('app/path_to_dot_env')
+    load_dotenv(os.getenv('PATH_TO_DOT_ENV'))
 
-def _to_bool(value):
+def to_bool(value):
     if isinstance(value, bool):
         return value
     if value is None:
@@ -29,7 +33,7 @@ def add_env_to_config(app, items):
         mode = item[1]
 
         if mode == 'bool':
-            app.config[key] = _to_bool(os.getenv(key))
+            app.config[key] = to_bool(os.getenv(key))
         elif mode == 'another_var' and len(item) >= 3:
             other_key = item[2]
             app.config[key] = app.config.get(other_key)
