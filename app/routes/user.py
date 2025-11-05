@@ -4,7 +4,8 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
     verify_jwt_in_request,
-    set_access_cookies
+    set_access_cookies,
+    unset_jwt_cookies
 )
 from functools import wraps
 from marshmallow import ValidationError
@@ -66,6 +67,13 @@ def get_user(id):
 
     user_schema = UserSchema()
     return jsonify(user_schema.dump(user)), 200
+
+@user_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    response = jsonify({'message': 'Logged out successfully'})
+    unset_jwt_cookies(response)
+    return response, 200
 
 @user_bp.route('/user/<int:id>', methods=['DELETE'])
 @jwt_required()
