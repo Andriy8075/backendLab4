@@ -9,8 +9,8 @@ from flask_jwt_extended import (
 
 category_bp = Blueprint('category', __name__)
 
-@jwt_required()
 @category_bp.route('/category', methods=['POST'])
+@jwt_required()
 def create_category():
     try:
         schema = CategoryCreateSchema()
@@ -30,16 +30,16 @@ def create_category():
             'messages': err.messages
         }), 400
 
-@jwt_required()
 @category_bp.route('/category', methods=['GET'])
+@jwt_required()
 def get_categories():
     user_id = int(get_jwt_identity())
     categories = Category.get_by_user_id(user_id)
     category_schema = CategorySchema(many=True)
     return jsonify(category_schema.dump(categories)), 200
 
-@jwt_required()
 @category_bp.route('/category/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_category(id):
     schema = DeleteCategorySchema()
 
