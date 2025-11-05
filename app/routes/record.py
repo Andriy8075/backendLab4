@@ -8,8 +8,8 @@ from flask_jwt_extended import (
 
 record_bp = Blueprint('record', __name__)
 
-@jwt_required()
 @record_bp.route('/record', methods=['POST'])
+@jwt_required()
 def create_record():
     try:
         schema = RecordCreateSchema()
@@ -29,8 +29,8 @@ def create_record():
             'messages': err.messages
         }), 400
 
-@jwt_required()
 @record_bp.route('/record/<int:id>', methods=['GET'])
+@jwt_required()
 def get_record(id):
     record = Record.get_by_id(id)
     if record is None:
@@ -39,8 +39,8 @@ def get_record(id):
     record_schema = RecordSchema()
     return jsonify(record_schema.dump(record)), 200
 
-@jwt_required()
 @record_bp.route('/record/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_record(id):
     if Record.delete(id):
         return jsonify({'message': 'Record deleted successfully'}), 200
