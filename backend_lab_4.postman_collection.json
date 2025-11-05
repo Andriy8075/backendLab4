@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "ab51c8a0-30bd-4cd8-abab-328126bb13f5",
-		"name": "backendLabswithCurrency",
+		"_postman_id": "dad25b48-8c64-45ba-a813-a8fb4af3318f",
+		"name": "backend_lab_4",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "46810625"
 	},
@@ -10,7 +10,7 @@
 			"name": "user",
 			"item": [
 				{
-					"name": "create user",
+					"name": "register",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -26,17 +26,22 @@
 									"key": "default_currency",
 									"value": "UAH",
 									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "qwerty123",
+									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "http://{{domain}}/user",
+							"raw": "http://{{domain}}/register",
 							"protocol": "http",
 							"host": [
 								"{{domain}}"
 							],
 							"path": [
-								"user"
+								"register"
 							]
 						}
 					},
@@ -93,6 +98,57 @@
 							],
 							"path": [
 								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "{{id}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "qwerty123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{domain}}/login",
+							"protocol": "http",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://{{domain}}/logout",
+							"protocol": "http",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"logout"
 							]
 						}
 					},
